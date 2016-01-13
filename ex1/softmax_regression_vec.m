@@ -27,6 +27,29 @@ function [f,g] = softmax_regression(theta, X,y)
   %        Before returning g, make sure you form it back into a vector with g=g(:);
   %
 %%% YOUR CODE HERE %%%
-  
+% cost
+z = [theta'; zeros(1,n)] * X;
+ez = exp(z);
+ezsum = sum(ez,1);
+
+rows = y;
+cols = 1:m;
+idx = sub2ind(size(z), rows, cols);
+ezj = ez(idx);
+
+J_xy = log(ezj ./ ezsum);
+f = -sum(J_xy,2);
+
+
+% gradient
+groundTruth = full(sparse(y, 1:m, 1));
+py = ez ./ repmat(ezsum,[num_classes, 1]);
+diff_gr = groundTruth - py;
+g = -diff_gr * X';
+g = g - repmat(g(end,:),[num_classes,1]);
+g = g(1:end-1,:)';
+
+
+
   g=g(:); % make gradient a vector for minFunc
 
