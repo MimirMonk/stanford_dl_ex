@@ -72,6 +72,22 @@ activations = zeros(convDim,convDim,numFilters,numImages);
 activationsPooled = zeros(outputDim,outputDim,numFilters,numImages);
 
 %%% YOUR CODE HERE %%%
+meanFilter = ones(poolDim)/(poolDim^2);
+for imageNum = 1:numImages
+  for filterNum = 1:numFilters
+      filter = squeeze(Wc(:,:,filterNum));
+      im = squeeze(images(:, :, imageNum));
+      convolvedImage = filter2(filter, im, 'valid');
+      convolvedImage = convolvedImage + bc(filterNum);
+      
+      activations(:, :, filterNum, imageNum) = 1./(1+exp(-convolvedImage));
+      
+      convolvedFeature = activations(:,:,filterNum,imageNum);
+      pooledResult = filter2(meanFilter, convolvedFeature, 'valid');
+      activationsPooled(:,:,filterNum,imageNum) = pooledResult(1:poolDim:end, 1:poolDim:end);
+  end
+end
+
 
 % Reshape activations into 2-d matrix, hiddenSize x numImages,
 % for Softmax layer
@@ -88,6 +104,14 @@ activationsPooled = reshape(activationsPooled,[],numImages);
 probs = zeros(numClasses,numImages);
 
 %%% YOUR CODE HERE %%%
+z = Wd * activationsPooled + repmat(bd,[1,numImages]);
+ez = exp(z);
+ezsum = sum(ez,1);
+
+probs = ez./repmat(ezsum,[size(ez,1),1]);
+
+
+
 
 %%======================================================================
 %% STEP 1b: Calculate Cost
@@ -98,6 +122,15 @@ probs = zeros(numClasses,numImages);
 cost = 0; % save objective into cost
 
 %%% YOUR CODE HERE %%%
+rows = labels;
+cols = (1:numImages)';
+idx = sub2ind(size(z), rows, cols);
+ezj = ez(idx)';
+
+J_xy = log(ezj ./ ezsum);
+cost = -sum(J_xy,2) / numImages + lambda/2*sum(theta(:).^2);
+
+
 
 % Makes predictions given probs and returns without backproagating errors.
 if pred
