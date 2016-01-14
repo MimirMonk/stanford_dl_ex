@@ -128,7 +128,7 @@ idx = sub2ind(size(z), rows, cols);
 ezj = ez(idx)';
 
 J_xy = log(ezj ./ ezsum);
-cost = -sum(J_xy,2) / numImages + lambda/2*sum(theta(:).^2);
+cost = -sum(J_xy,2);
 
 
 
@@ -161,6 +161,9 @@ end;
 %  for that filter with each image and aggregate over images.
 
 %%% YOUR CODE HERE %%%
+
+
+
 
 %% Unroll gradient into grad vector for minFunc
 grad = [Wc_grad(:) ; Wd_grad(:) ; bc_grad(:) ; bd_grad(:)];
