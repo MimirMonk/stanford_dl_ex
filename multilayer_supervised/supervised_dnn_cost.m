@@ -20,21 +20,22 @@ gradStack = cell(numHidden+1, 1);
 
 % MLP
 numCases = size(data,2);
-inputData = data;
+inputData = cell(numHidden+1,1);
+inputData{1} = data;
 for l = 1:numHidden
     W = stack{l}.W;
     b = stack{l}.b;
-    z = W * inputData + repmat(b,[1,numCases]);
+    z = W * inputData{l} + repmat(b,[1,numCases]);
     a = activation(z, ei.activation_fun);
     hAct{l} = a;
-    inputData = a;
+    inputData{l+1} = a;
 end
 
 % Softmax
 l = numHidden+1;
 W = stack{l}.W;
 b = stack{l}.b;
-z = W * inputData + repmat(b,[1,numCases]);
+z = W * inputData{l} + repmat(b,[1,numCases]);
 a = activation(z, 'softmax');
 hAct{l} = a;
 
@@ -55,15 +56,26 @@ cols = (1:numCases)';
 idx = sub2ind(size(a), rows, cols);
 aj = a(idx);
 J_xy = log(aj);
-cost = -sum(J_xy,2);
+cost = -sum(J_xy,1)/numCases;
 
 %% compute gradients using backpropagation
 %%% YOUR CODE HERE %%%
 
+deltaStack = cell(numHidden+1,1);
+
 % Softmax
 groundTruth = full(sparse(labels, 1:numCases, 1));
 diff_gr = groundTruth - a;
-thetagrad = diff_gr * data' / (-numCases) + lambda * theta;
+deltaStack{l} = -diff_gr;
+gradStack{l}.W = (deltaStack{l} * inputData{l}')./numCases + stack{l}.W * ei.lambda;
+gradStack{l}.b = sum(deltaStack{l},2)./numCases;
+
+% MLP
+for l = numHidden:-1:1
+    deltaStack{l} = inputData{l+1}.*(1-inputData{l+1}) .* (stack{l+1}.W'*deltaStack{l+1});
+    gradStack{l}.W = (deltaStack{l} * inputData{l}')./numCases + stack{l}.W * ei.lambda;
+    gradStack{l}.b = sum(deltaStack{l},2)./numCases;
+end
 
 %% compute weight penalty cost and gradient for non-bias terms
 %%% YOUR CODE HERE %%%
