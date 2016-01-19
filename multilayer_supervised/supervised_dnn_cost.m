@@ -43,7 +43,9 @@ hAct{l} = a;
 %% return here if only predictions desired.
 if po
   cost = -1; ceCost = -1; wCost = -1; numCorrect = -1;
-  grad = [];  
+  grad = [];
+  % prediction
+  [~,pred_prob] = max(a,[],1);
   return;
 end;
 

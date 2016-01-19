@@ -36,6 +36,36 @@ ei.activation_fun = 'logistic';
 stack = initialize_weights(ei);
 params = stack2params(stack);
 
+
+gradCheck = false;
+if gradCheck
+    data_train = data_train(:,1:300);
+    labels_train = labels_train(1:300);
+    ei.layer_sizes = [30, ei.output_dim];
+    stack = initialize_weights(ei);
+    params = stack2params(stack);
+
+    [cost, grad] = supervised_dnn_cost(params, ei, data_train, labels_train);
+    epsilon = 10^-4;
+    len = numel(params);
+    numgrad = zeros(len,1);
+    for i=1:len
+        disp(i)
+        q = zeros(len,1);
+        q(i) = epsilon;
+        params_plus = params + q;
+        params_minus = params - q;
+        [costplus, ~] = supervised_dnn_cost(params_plus, ei, data_train, labels_train);
+        [costminus, ~] = supervised_dnn_cost(params_minus, ei, data_train, labels_train);
+        numgrad(i) = ( costplus-costminus ) / 2 / epsilon;
+    end
+    diff = norm(numgrad-grad)/norm(numgrad+grad);
+    disp(diff); 
+end
+
+
+
+
 %% setup minfunc options
 options = [];
 options.display = 'iter';
