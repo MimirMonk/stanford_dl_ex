@@ -59,11 +59,17 @@ cost = -sum(J_xy,2);
 
 %% compute gradients using backpropagation
 %%% YOUR CODE HERE %%%
+deltaStack = cell
 
 % Softmax
 groundTruth = full(sparse(labels, 1:numCases, 1));
 diff_gr = groundTruth - a;
-thetagrad = diff_gr * data' / (-numCases) + lambda * theta;
+deltaStack{l} = -diff_gr * data';
+
+% MLP
+for l = l-1:-1:1
+    deltaStack{l} = 
+end
 
 %% compute weight penalty cost and gradient for non-bias terms
 %%% YOUR CODE HERE %%%

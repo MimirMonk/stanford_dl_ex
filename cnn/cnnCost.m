@@ -152,6 +152,7 @@ end;
 
 %%% YOUR CODE HERE %%%
 
+
 %%======================================================================
 %% STEP 1d: Gradient Calculation
 %  After backpropagating the errors above, we can use them to calculate the
