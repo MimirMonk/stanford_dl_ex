@@ -38,14 +38,14 @@ idx = sub2ind(size(z), rows, cols);
 ezj = ez(idx);
 
 J_xy = log(ezj ./ ezsum);
-f = -sum(J_xy,2);
+f = -sum(J_xy,2)./m;
 
 
 % gradient
 groundTruth = full(sparse(y, 1:m, 1));
 py = ez ./ repmat(ezsum,[num_classes, 1]);
 diff_gr = groundTruth - py;
-g = -diff_gr * X';
+g = -diff_gr * X'/m;
 g = g - repmat(g(end,:),[num_classes,1]);
 g = g(1:end-1,:)';
 
