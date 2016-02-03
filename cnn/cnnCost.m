@@ -26,6 +26,7 @@ if ~exist('pred','var')
     pred = false;
 end;
 
+lambda = 1e-4;
 
 imageDim = size(images,1); % height/width of image
 numImages = size(images,3); % number of images
@@ -123,12 +124,12 @@ cost = 0; % save objective into cost
 
 %%% YOUR CODE HERE %%%
 rows = labels;
-cols = (1:numImages)';
-idx = sub2ind(size(z), rows, cols);
+cols = 1:numImages;
+idx = sub2ind(size(z), rows(:), cols(:));
 ezj = ez(idx)';
 
 J_xy = log(ezj ./ ezsum);
-cost = -sum(J_xy,2);
+cost = -sum(J_xy,2) /numImages + lambda / 2 * sum(Wd(:).^2);
 
 
 
@@ -152,6 +153,22 @@ end;
 
 %%% YOUR CODE HERE %%%
 
+% Softmax
+groundTruth = full(sparse(rows(:), cols(:), 1));
+diff = probs - groundTruth;
+delta_d = diff;
+
+% Conv
+delta_pooled =  (Wd' * delta_d) * (1/poolDim^2);
+delta_pooled = reshape(delta_pooled,outputDim,outputDim,numFilters,numImages);
+
+delta_c = zeros(convDim,convDim,numFilters,numImages);
+for imageNum = 1:numImages
+  for filterNum = 1:numFilters
+      a = activations(:, :, filterNum, imageNum);
+      delta_c(:,:,filterNum,imageNum) = a.*(1-a) .* kron(delta_pooled(:,:,filterNum,imageNum),ones(poolDim));
+  end
+end
 
 %%======================================================================
 %% STEP 1d: Gradient Calculation
@@ -163,7 +180,21 @@ end;
 
 %%% YOUR CODE HERE %%%
 
+% Softmax
+Wd_grad = delta_d * activationsPooled' /numImages + lambda * Wd;
+bd_grad = sum(delta_d,2) /numImages;
 
+% Conv
+for filterNum = 1:numFilters
+  for imageNum = 1:numImages
+      im = squeeze(images(:, :, imageNum));
+      delta = delta_c(:,:,filterNum,imageNum);
+      Wc_grad(:,:,filterNum) = Wc_grad(:,:,filterNum) + filter2(delta, im, 'valid');
+      bc_grad(filterNum) = bc_grad(filterNum) + sum(delta(:));
+  end
+end
+Wc_grad = Wc_grad/numImages;
+bc_grad = bc_grad/numImages;
 
 
 %% Unroll gradient into grad vector for minFunc
