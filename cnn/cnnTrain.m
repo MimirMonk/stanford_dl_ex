@@ -46,8 +46,8 @@ if DEBUG
     db_numFilters = 2;
     db_filterDim = 9;
     db_poolDim = 5;
-    db_images = images(:,:,1:10);
-    db_labels = labels(1:10);
+    db_images = images(:,:,1:11);
+    db_labels = labels(1:11);
     db_theta = cnnInitParams(imageDim,db_filterDim,db_numFilters,...
                 db_poolDim,numClasses);
     

@@ -31,7 +31,7 @@ pooledFeatures = zeros(convolvedDim / poolDim, ...
 
 %%% YOUR CODE HERE %%%
 
-tic;
+% tic;
 meanFilter = ones(poolDim)/(poolDim^2);
 for imageNum = 1:numImages
     for filterNum = 1:numFilters
@@ -40,7 +40,7 @@ for imageNum = 1:numImages
         pooledFeatures(:,:,filterNum,imageNum) = pooledResult(1:poolDim:end, 1:poolDim:end);
     end
 end
-toc;
+% toc;
 
 end
 
